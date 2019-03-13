@@ -8,13 +8,6 @@ cd metrics-exporter
 go build
 ```
 
-## Build for release (for linux)
-
-```
-cd metrics-exporter
-env GOOS=linux GOARCH=arm go build
-```
-
 ## Usage
 
 ```

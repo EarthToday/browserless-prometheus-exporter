@@ -1,0 +1,16 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/golang:1.8
+    working_directory: /go/src/github.com/dffrntmedia/browserless-prometheus-exporter
+
+    steps:
+      - checkout
+      - run:
+          name: Build
+          command: go build
+
+      - store_artifacts:
+          path: /go/src/github.com/dffrntmedia/browserless-prometheus-exporter/browserless-prometheus-exporter
+          destination: browserless-prometheus-exporter
