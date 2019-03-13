@@ -21,10 +21,14 @@ env GOOS=linux GOARCH=arm go build
 ./metrics-exporter -browserless.host=<BROWSERLESS_HOST> -browserless.port=<BROWSERLESS_PORT> -exporter.port=<EXPORTER_HOST>
 ```
 
-Defaults:
-BROWSERLESS_HOST: 127.0.0.1
-BROWSERLESS_PORT: 3000
-EXPORTER_HOST: 3002
+**Defaults:**
+
+Option | Value
+--- | ---
+browserless.host | '127.0.0.1'
+browserless.port | 3000
+exporter.port | 3002
+prefix | ''
 
 Also prefix can set via:
 
