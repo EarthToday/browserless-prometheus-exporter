@@ -144,13 +144,13 @@ func main() {
 
 	flag.Parse()
 
-	http.HandleFunc("/metrics", handleMetrics)
+	exporterAddress := getExporterAddress(config)
+	log.Printf("Starting exporter on %s\n", exporterAddress)
 
 	browserlessAddress = getBrowserlessAddress(config)
 	log.Printf("Browserless address %s\n", browserlessAddress)
 
-	exporterAddress := getExporterAddress(config)
-	log.Printf("Starting exporter on %s\n", exporterAddress)
+	http.HandleFunc("/metrics", handleMetrics)
 
 	http.ListenAndServe(exporterAddress, nil)
 }
