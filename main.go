@@ -4,10 +4,12 @@ import (
 	"encoding/json"
 	"net/http"
 	"log"
+	"os"
 	"bytes"
 	"io"
 	"fmt"
 	"flag"
+	"strconv"
 )
 
 type MetricsObject struct {
@@ -27,6 +29,10 @@ type ExporterConfig struct {
 	BrowserlessPort *int
 	ExporterHost *string
 	ExporterPort *int
+	EnvBrowserlessHost *string
+	EnvBrowserlessPort *string
+	EnvExporterHost *string
+	EnvExporterPort *string
 }
 
 var (
@@ -79,6 +85,48 @@ func handleMetrics(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(lastPrometheusMetricsReport))
 }
 
+func getBrowserlessAddress(config ExporterConfig) string {
+	var host string
+	if len(*config.EnvBrowserlessHost) > 0 {
+		host = os.Getenv(*config.EnvBrowserlessHost)
+	} else {
+		host = *config.BrowserlessHost
+	}
+	var port int
+	if len(*config.EnvBrowserlessPort) > 0 {
+		portStr := os.Getenv(*config.EnvBrowserlessPort)
+		portParsed, err := strconv.Atoi(portStr)
+		if err != nil {
+			log.Fatal("Wrong browserless port value")
+		}
+		port = portParsed
+	} else {
+		port = *config.BrowserlessPort
+	}
+	return fmt.Sprintf("%s:%d", host, port)
+}
+
+func getExporterAddress(config ExporterConfig) string {
+	var host string
+	if len(*config.EnvExporterHost) > 0 {
+		host = os.Getenv(*config.EnvExporterHost)
+	} else {
+		host = *config.ExporterHost
+	}
+	var port int
+	if len(*config.EnvExporterPort) > 0 {
+		portStr := os.Getenv(*config.EnvExporterPort)
+		portParsed, err := strconv.Atoi(portStr)
+		if err != nil {
+			log.Fatal("Wrong exporter port value")
+		}
+		port = portParsed
+	} else {
+		port = *config.ExporterPort
+	}
+	return fmt.Sprintf("%s:%d", host, port)
+}
+
 func main() {
 	lastMetricsDate = 0
 	lastPrometheusMetricsReport = ""
@@ -89,14 +137,19 @@ func main() {
 	config.ExporterHost = flag.String("exporter.host", "localhost", "Exporter host")
 	config.ExporterPort = flag.Int("exporter.port", 3002, "Exporter port")
 
+	config.EnvBrowserlessHost = flag.String("browserless.host.env", "", "Browserless host env var name")
+	config.EnvBrowserlessPort = flag.String("browserless.port.env", "", "Browserless port env var name")
+	config.EnvExporterHost = flag.String("exporter.host.env", "", "Exporter host env var name")
+	config.EnvExporterPort = flag.String("exporter.port.env", "", "Exporter port env var name")
+
 	flag.Parse()
 
 	http.HandleFunc("/metrics", handleMetrics)
 
-	browserlessAddress = fmt.Sprintf("%s:%d", *config.BrowserlessHost, *config.BrowserlessPort)
+	browserlessAddress = getBrowserlessAddress(config)
 	log.Printf("Browserless address %s\n", browserlessAddress)
 
-	exporterAddress := fmt.Sprintf("%s:%d", *config.ExporterHost, *config.ExporterPort)
+	exporterAddress := getExporterAddress(config)
 	log.Printf("Starting exporter on %s\n", exporterAddress)
 
 	http.ListenAndServe(exporterAddress, nil)
