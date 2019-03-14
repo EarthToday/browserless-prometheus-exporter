@@ -97,7 +97,7 @@ func getBrowserlessAddress(config ExporterConfig) string {
 		portStr := os.Getenv(*config.EnvBrowserlessPort)
 		portParsed, err := strconv.Atoi(portStr)
 		if err != nil {
-			log.Fatal("Wrong browserless port value")
+			log.Printf("Wrong browserless port value '%s' in environment variable '%s'", portStr, *config.EnvBrowserlessPort)
 		}
 		port = portParsed
 	} else {
@@ -118,7 +118,7 @@ func getExporterAddress(config ExporterConfig) string {
 		portStr := os.Getenv(*config.EnvExporterPort)
 		portParsed, err := strconv.Atoi(portStr)
 		if err != nil {
-			log.Fatal("Wrong exporter port value")
+			log.Printf("Wrong exporter port value '%s' in environment variable '%s'", portStr, *config.EnvExporterPort)
 		}
 		port = portParsed
 	} else {
