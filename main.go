@@ -43,15 +43,22 @@ func prefix() string {
 	return ""
 }
 
-func buildPrometheusMetricsReport(metricsObject MetricsObject) string {
+func buildPrometheusMetricsReport(metricsObject MetricsObject, count int) string {
 	report := ""
-	report += fmt.Sprintf("%sbrowserless_cpu %4.2f\n", prefix(), metricsObject.Cpu)
-	report += fmt.Sprintf("%sbrowserless_memory %4.2f\n", prefix(), metricsObject.Memory)
-	report += fmt.Sprintf("%sbrowserless_successful %d\n", prefix(), metricsObject.Successful)
-	report += fmt.Sprintf("%sbrowserless_queued %d\n", prefix(), metricsObject.Queued)
-	report += fmt.Sprintf("%sbrowserless_rejected %d\n", prefix(), metricsObject.Rejected)
-	report += fmt.Sprintf("%sbrowserless_timedout %d\n", prefix(), metricsObject.Timedout)
-	report += fmt.Sprintf("%sbrowserless_error %d\n", prefix(), metricsObject.Error)
+	report += fmt.Sprintf("%sbrowserless_cpu_sum %4.2f\n", prefix(), metricsObject.Cpu)
+	report += fmt.Sprintf("%sbrowserless_cpu_count %d\n", prefix(), count)
+	report += fmt.Sprintf("%sbrowserless_memory_sum %4.2f\n", prefix(), metricsObject.Memory)
+	report += fmt.Sprintf("%sbrowserless_memory_count %d\n", prefix(), count)
+	report += fmt.Sprintf("%sbrowserless_successful_sum %d\n", prefix(), metricsObject.Successful)
+	report += fmt.Sprintf("%sbrowserless_successful_count %d\n", prefix(), count)
+	report += fmt.Sprintf("%sbrowserless_queued_sum %d\n", prefix(), metricsObject.Queued)
+	report += fmt.Sprintf("%sbrowserless_queued_count %d\n", prefix(), count)
+	report += fmt.Sprintf("%sbrowserless_rejected_sum %d\n", prefix(), metricsObject.Rejected)
+	report += fmt.Sprintf("%sbrowserless_rejected_count %d\n", prefix(), count)
+	report += fmt.Sprintf("%sbrowserless_timedout_sum %d\n", prefix(), metricsObject.Timedout)
+	report += fmt.Sprintf("%sbrowserless_timedout_count %d\n", prefix(), count)
+	report += fmt.Sprintf("%sbrowserless_error_sum %d\n", prefix(), metricsObject.Error)
+	report += fmt.Sprintf("%sbrowserless_error_count %d\n", prefix(), count)
 	return report
 }
 
@@ -73,7 +80,19 @@ func handleMetrics(w http.ResponseWriter, r *http.Request) {
 	lastMetricsObject := metricsObjects[len(metricsObjects) - 1]
 
 	if lastMetricsObject.Date != lastMetricsDate {
-		lastPrometheusMetricsReport = buildPrometheusMetricsReport(lastMetricsObject)
+		var sumMetricsObject MetricsObject
+
+		for _, metricsObject := range metricsObjects {
+			sumMetricsObject.Cpu += metricsObject.Cpu
+			sumMetricsObject.Error += metricsObject.Error
+			sumMetricsObject.Memory += metricsObject.Memory
+			sumMetricsObject.Queued += metricsObject.Queued
+			sumMetricsObject.Rejected += metricsObject.Rejected
+			sumMetricsObject.Successful += metricsObject.Successful
+			sumMetricsObject.Timedout += metricsObject.Timedout
+		}
+		
+		lastPrometheusMetricsReport = buildPrometheusMetricsReport(sumMetricsObject, len(metricsObjects))
 	}
 
 	w.Write([]byte(lastPrometheusMetricsReport))
