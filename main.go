@@ -25,6 +25,7 @@ type ExporterConfig struct {
 	Prefix string
 	BrowserlessHost string
 	BrowserlessPort int
+	ExporterHost string
 	ExporterPort int
 }
 
@@ -32,6 +33,7 @@ var (
 	lastMetricsDate int64
 	lastPrometheusMetricsReport string
 	config ExporterConfig
+	browserlessAddress string
 )
 
 func prefix() string {
@@ -54,7 +56,7 @@ func buildPrometheusMetricsReport(metricsObject MetricsObject) string {
 }
 
 func handleMetrics(w http.ResponseWriter, r *http.Request) {
-	res, err := http.Get(fmt.Sprintf("http://%s:%d/metrics", config.BrowserlessHost, config.BrowserlessPort))
+	res, err := http.Get(fmt.Sprintf("http://%s/metrics", browserlessAddress))
 
 	if err != nil {
 		log.Fatal(err)
@@ -82,13 +84,18 @@ func main() {
 	lastPrometheusMetricsReport = ""
 
 	config.Prefix = *flag.String("prefix", "", "Prefix for metrics names")
-	config.BrowserlessHost = *flag.String("browserless.host", "127.0.0.1", "Browserless host")
+	config.BrowserlessHost = *flag.String("browserless.host", "localhost", "Browserless host")
 	config.BrowserlessPort = *flag.Int("browserless.port", 3000, "Browserless port")
+	config.ExporterHost = *flag.String("exporter.host", "localhost", "Exporter host")
 	config.ExporterPort = *flag.Int("exporter.port", 3002, "Exporter port")
 
 	http.HandleFunc("/metrics", handleMetrics)
 
-	exporterAddress := fmt.Sprintf(":%d", config.ExporterPort)
+	browserlessAddress = fmt.Sprintf("%s:%d", config.BrowserlessHost, config.BrowserlessPort)
+	log.Printf("Browserless address %s\n", browserlessAddress)
+
+	exporterAddress := fmt.Sprintf("%s:%d", config.ExporterHost, config.ExporterPort)
+	log.Printf("Starting exporter on %s\n", exporterAddress)
 
 	http.ListenAndServe(exporterAddress, nil)
 }
