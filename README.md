@@ -28,3 +28,6 @@ browserless.port | 3000
 exporter.host | '127.0.0.1'
 exporter.port | 3002
 prefix | ''
+
+## Metrics
+!(Provided metrics)[https://ibb.co/8sMTvxK]
