@@ -30,4 +30,4 @@ exporter.port | 3002
 prefix | ''
 
 ## Metrics
-!(Provided metrics)[https://ibb.co/8sMTvxK]
+!(Provided metrics)[https://i.ibb.co/B3LdW6z/2019-05-29-12-23-09.png]
